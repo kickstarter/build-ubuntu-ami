@@ -1,0 +1,60 @@
+#!/bin/bash -ex
+# User data script
+
+# Log output to the console, syslog, and /var/log/user-data.log
+exec > >(tee /var/log/user-data.log|logger -t user-data -s 2>/dev/console) 2>&1
+
+# Download and mount the clean image
+image=/mnt/<%= image_name %>.img
+imagedir=/mnt/<%= image_name %>-cloudimg-<%= arch %>
+wget -qO- <%= image_url %> |
+  tar xzf - -C /mnt
+mkdir -p $imagedir
+mount -o loop $image $imagedir
+
+# Allow network access from chroot environment
+cp /etc/resolv.conf $imagedir/etc/
+
+# Upgrade and install packages on the target file system
+chroot $imagedir mount -t proc none /proc
+#sudo chroot $imagedir mount -t devpts none /dev/pts
+cat <<EOF | tee $imagedir/usr/sbin/policy-rc.d > /dev/null
+#!/bin/sh
+exit 101
+EOF
+chmod 755 $imagedir/usr/sbin/policy-rc.d
+chroot $imagedir apt-get update
+chroot $imagedir apt-get dist-upgrade -y
+
+# RUN CUSTOM USER SCRIPT
+cat <<CUSTOM_SCRIPT_EOF > $imagedir/tmp/custom_user_script
+<%= custom_user_script %>
+CUSTOM_SCRIPT_EOF
+
+chmod +x $imagedir/tmp/custom_user_script
+chroot $imagedir /tmp/custom_user_script
+# END CUSTOM USER SCRIPT
+
+# Clean up chroot environment
+chroot $imagedir umount /proc
+#chroot $imagedir umount /dev/pts
+rm -f $imagedir/usr/sbin/policy-rc.d
+
+# Wait for EBS volume to be attached
+dev=<%= ebs_device %>
+while [ ! -e $dev ]; do sleep 1; done
+
+# Format and mount the EBS volume
+yes | sudo mkfs.ext4 -L cloudimg-rootfs $dev
+ebsimagedir=$imagedir-ebs
+mkdir $ebsimagedir
+mount $dev $ebsimagedir
+
+# Copy file system from temporary rootdir to EBS volume
+tar -cSf - -C $imagedir . | sudo tar xvf - -C $ebsimagedir
+
+umount $imagedir
+umount $ebsimagedir
+
+# Shutdown to signal success
+shutdown -h now

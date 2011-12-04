@@ -1,0 +1,26 @@
+#!/usr/bin/env ruby
+
+$: << 'lib'
+require 'build_ubuntu_ami'
+require 'optparse'
+require 'open-uri'
+
+options = BuildUbuntuAmi.default_options
+
+OptionParser.new do |opts|
+  opts.banner = "Usage: #{$0} [options] [path or url to user script]"
+  opts.on('-r', '--region=REGION', "AWS region (#{options[:region]})") { |o| options[:region] = o }
+  opts.on('-f', '--flavor=FLAVOR', "AWS instance type (#{options[:flavor]})") { |o| options[:flavor] = o }
+  opts.on('-b', '--brand=BRAND', "brand prefix (#{options[:brand]})") { |o| options[:brand] = o }
+  opts.on('-s', '--size=SIZE', "Size of root volume in GB (#{options[:size]})") { |o| options[:size] = o }
+  opts.on('-c', '--codename=CODENAME', "Ubuntu release codename (#{options[:codename]})") { |o| options[:codename] = o }
+  opts.on('-k', '--key_name=KEY_NAME', "EC2 key name for scratch AMI (#{options[:key_name]})") { |o| options[:key_name] = o }
+  opts.on('-g', '--group=GROUP', "EC2 security group for scratch AMI (#{options[:group]})") { |o| options[:group] = o }
+
+  opts.on('-h', '--help', 'Show this message') { puts opts; exit }
+end.parse!
+
+raise OptionParser::MissingArgument.new("Must specify a custom user script (file or url)") unless ARGV[0]
+options[:custom_user_script] = open(ARGV[0]).read
+
+BuildUbuntuAmi.new(options).build!
