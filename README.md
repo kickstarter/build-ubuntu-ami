@@ -4,11 +4,11 @@ A simple, secure tool for customizing Ubuntu images for Amazon EC2 from your loc
 
 ## Install
 
-    gem install build_ubuntu_ami
+    gem install build-ubuntu-ami
 
 ## Basic Usage
 
-    build_ubuntu_ami my_custom_script.sh
+    build-ubuntu-ami my_custom_script.sh
 
 ## How it works
 
