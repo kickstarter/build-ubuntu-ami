@@ -20,7 +20,13 @@ OptionParser.new do |opts|
   opts.on('-h', '--help', 'Show this message') { puts opts; exit }
 end.parse!
 
-raise OptionParser::MissingArgument.new("Must specify a custom user script (file or url)") unless ARGV[0]
+unless ARGV[0]
+  message = %{
+Must specify a custom user script (file or url)
+See https://github.com/kickstarter/build-ubuntu-ami/tree/master/examples
+  }.strip
+  raise OptionParser::MissingArgument.new(message)
+end
 options[:custom_user_script] = open(ARGV[0]).read
 
 BuildUbuntuAmi.new(options).build!
