@@ -17,4 +17,6 @@ Gem::Specification.new do |s|
   s.summary = %q{Securely create a customized Ubuntu Amazon Machine Image.}
   s.test_files = Dir.glob("test/**/*")
 
+  s.add_dependency("fog", ">= 1.3.0") # Maybe works for older versions?
+
 end
