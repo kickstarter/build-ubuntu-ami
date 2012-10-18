@@ -26,3 +26,11 @@ It works as follows:
 Booting and logging in to a system offers many opportunities to leak secret credentials (even if you [delete them](http://alestic.com/2009/09/ec2-public-ebs-danger)). Creating an AMI from a pristine image rather than a running root volume obviates the need to remove leaked credentials.
 
 This script does not need a private key & cert for credentials. It uses the AWS Access Key ID and Secret Access Key.
+
+## Troubleshooting
+
+If you're running into an issue where you need to run CLI commands, its helpful to ssh to the instance and enter into the chroot environment. Do the following:
+
+   $ cd /mnt/$IMAGE_NAME
+   $ sudo chroot . /bin/bash
+
