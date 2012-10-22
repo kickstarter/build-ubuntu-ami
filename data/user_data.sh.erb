@@ -13,16 +13,21 @@ mkdir -p $imagedir
 mount -o loop $image $imagedir
 
 # Allow network access from chroot environment
+# cp fails because the symlink reference doesn't exist. Create a backup for now. 
+mv $imagedir/etc/resolv.conf $imagedir/etc/resolv.conf.bak
 cp /etc/resolv.conf $imagedir/etc/
 
 # Upgrade and install packages on the target file system
 chroot $imagedir mount -t proc none /proc
-#sudo chroot $imagedir mount -t devpts none /dev/pts
+
+# prevent daemons from starting during apt-get 
 cat <<EOF | tee $imagedir/usr/sbin/policy-rc.d > /dev/null
 #!/bin/sh
 exit 101
 EOF
+
 chmod 755 $imagedir/usr/sbin/policy-rc.d
+
 chroot $imagedir apt-get update
 chroot $imagedir apt-get dist-upgrade -y
 
@@ -35,13 +40,25 @@ chmod +x $imagedir/tmp/custom_user_script
 chroot $imagedir /tmp/custom_user_script
 # END CUSTOM USER SCRIPT
 
+# Put resolv.conf symlink back in place
+rm -rf  $imagedir/etc/resolve.conf
+mv $imagedir/etc/resolv.conf.bak $imagedir/etc/resolv.conf
+
 # Clean up chroot environment
 chroot $imagedir umount /proc
-#chroot $imagedir umount /dev/pts
+
+# Clean up policy-rc.d
 rm -f $imagedir/usr/sbin/policy-rc.d
 
 # Wait for EBS volume to be attached
 dev=<%= ebs_device %>
+
+# Device names changed in precise/sid. lsb_release modules arent loaded so use debian_version.
+codename=$(cat /etc/debian_version)
+if [ "$codename" == "wheezy/sid" ]; then
+    dev="/dev/xvdi"
+fi
+
 while [ ! -e $dev ]; do sleep 1; done
 
 # Format and mount the EBS volume
@@ -53,6 +70,7 @@ mount $dev $ebsimagedir
 # Copy file system from temporary rootdir to EBS volume
 tar -cSf - -C $imagedir . | sudo tar xvf - -C $ebsimagedir
 
+# Unmount 
 umount $imagedir
 umount $ebsimagedir
 
