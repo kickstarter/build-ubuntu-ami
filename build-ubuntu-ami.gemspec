@@ -3,7 +3,7 @@ lib = File.expand_path('../lib/', __FILE__)
 
 Gem::Specification.new do |s|
   s.name = 'build-ubuntu-ami'
-  s.version = '0.1.0'
+  s.version = '0.1.1'
 
   s.authors = ["Aaron Suggs"]
   s.description = "Create customized ubuntu AMIs the hard (secure) way."
