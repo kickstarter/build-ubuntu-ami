@@ -15,7 +15,7 @@ class BuildUbuntuAmi
       :flavor   => 'm1.small',
       :brand    => 'My',
       :size     => 20,
-      :codename => 'lucid',
+      :codename => 'precise',
       :key_name => 'default',
       :group    => 'default',
       :arch     => 'amd64',
@@ -61,7 +61,6 @@ class BuildUbuntuAmi
     else
       arch
     end
-
   end
 
   def description
@@ -131,7 +130,6 @@ class BuildUbuntuAmi
     puts "Terminating #{server.id}"
     server.destroy
   end
-
 
   def build!
     launch_server!

@@ -18,7 +18,6 @@ OptionParser.new do |opts|
   opts.on('-g', '--group=GROUP', "EC2 security group for scratch AMI (#{options[:group]})") { |o| options[:group] = o }
   opts.on('-a', '--arch=ARCH', "Processor architecture for scratch AMI (#{options[:arch]})") { |o| options[:arch] = o }
 
-
   opts.on('-h', '--help', 'Show this message') { puts opts; exit }
 end.parse!
 
