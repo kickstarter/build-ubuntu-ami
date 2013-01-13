@@ -16,6 +16,8 @@ OptionParser.new do |opts|
   opts.on('-c', '--codename=CODENAME', "Ubuntu release codename (#{options[:codename]})") { |o| options[:codename] = o }
   opts.on('-k', '--key_name=KEY_NAME', "EC2 key name for scratch AMI (#{options[:key_name]})") { |o| options[:key_name] = o }
   opts.on('-g', '--group=GROUP', "EC2 security group for scratch AMI (#{options[:group]})") { |o| options[:group] = o }
+  opts.on('-a', '--arch=ARCH', "Processor architecture for scratch AMI (#{options[:arch]})") { |o| options[:arch] = o }
+
 
   opts.on('-h', '--help', 'Show this message') { puts opts; exit }
 end.parse!
