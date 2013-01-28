@@ -13,8 +13,8 @@ mkdir -p $imagedir
 mount -o loop $image $imagedir
 
 # Allow network access from chroot environment
-# cp fails because the symlink reference doesn't exist. Create a backup for now. 
-mv $imagedir/etc/resolv.conf $imagedir/etc/resolv.conf.bak
+# cp fails because the symlink reference doesn't exist. Create a backup for now.
+if [ -e $imagedir/etc/resolve.conf ]; then mv $imagedir/etc/resolv.conf $imagedir/etc/resolv.conf.bak; fi
 cp /etc/resolv.conf $imagedir/etc/
 
 # Upgrade and install packages on the target file system
@@ -42,7 +42,7 @@ chroot $imagedir /tmp/custom_user_script
 
 # Put resolv.conf symlink back in place
 rm -rf  $imagedir/etc/resolve.conf
-mv $imagedir/etc/resolv.conf.bak $imagedir/etc/resolv.conf
+if [ -e $imagedir/etc/resolve.conf.bak ]; then mv $imagedir/etc/resolv.conf.bak $imagedir/etc/resolv.conf; fi
 
 # Clean up chroot environment
 chroot $imagedir umount /proc
