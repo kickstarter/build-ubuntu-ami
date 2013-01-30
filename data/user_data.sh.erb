@@ -4,11 +4,18 @@
 # Log output to the console, syslog, and /var/log/user-data.log
 exec > >(tee /var/log/user-data.log|logger -t user-data -s 2>/dev/console) 2>&1
 
-# Download and mount the clean image
+# Download and extract the clean image
 image=/mnt/<%= image_name %>.img
-imagedir=/mnt/<%= image_name %>-cloudimg-<%= arch %>
-wget -qO- <%= image_url %> |
-  tar xzf - -C /mnt
+imagedir=/mnt/<%= image_name %>
+wget -qO- <%= image_url %> | tar xzf - -C /mnt
+
+# The image is 1.4GB by default
+# Add 4GB for good measure
+dd if=/dev/zero bs=1024k count=4096 >> $image
+e2fsck -f $image
+resize2fs $image
+
+# Mount the image
 mkdir -p $imagedir
 mount -o loop $image $imagedir
 
@@ -70,7 +77,7 @@ mount $dev $ebsimagedir
 # Copy file system from temporary rootdir to EBS volume
 tar -cSf - -C $imagedir . | sudo tar xvf - -C $ebsimagedir
 
-# Unmount 
+# Unmount
 umount $imagedir
 umount $ebsimagedir
 
