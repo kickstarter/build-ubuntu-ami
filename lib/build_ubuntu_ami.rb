@@ -138,7 +138,7 @@ class BuildUbuntuAmi
     puts "waiting for user_data to complete and server to shut down..."
     puts "Follow along by running:"
     puts "  ssh -l #{server.username} #{server.dns_name} 'tail -f /var/log/user-data.log'"
-    server.wait_for { state == 'stopped' }
+    server.wait_for(60*60*24*7) { state == 'stopped' }
 
     puts "Detaching volume"
     volume.server = nil
