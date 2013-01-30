@@ -12,7 +12,7 @@ wget -qO- <%= image_url %> | tar xzf - -C /mnt
 # The image is 1.4GB by default
 # Add 4GB for good measure
 dd if=/dev/zero bs=1024k count=4096 >> $image
-e2fsck -f $image
+e2fsck -p -f $image
 resize2fs $image
 
 # Mount the image
