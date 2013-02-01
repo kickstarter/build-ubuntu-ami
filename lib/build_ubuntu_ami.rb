@@ -87,9 +87,13 @@ class BuildUbuntuAmi
     "http://uec-images.ubuntu.com/#{codename}/current/#{image_name}.tar.gz"
   end
 
+  def fog
+    @fog ||= Fog::Compute.new(:provider => 'AWS', :region => region)
+  end
+
   def launch_server!
     puts "Launching server..."
-    self.server = Fog::Compute.new(:provider => 'AWS', :region => region).servers.create({
+    self.server = fog.servers.create({
       :flavor_id => flavor,
       :image_id => canonical_ami,
       :groups => [group],
@@ -146,7 +150,7 @@ class BuildUbuntuAmi
     take_snapshot!
 
     # Register AMI
-    res = Fog::Compute[:aws].register_image(description, description, root_device, block_device_mapping, 'KernelId' => kernel, 'Architecture' => image_arch)
+    res = fog.register_image(description, description, root_device, block_device_mapping, 'KernelId' => kernel, 'Architecture' => image_arch)
     puts "Registered imageId #{res.body['imageId']}"
 
     cleanup!
