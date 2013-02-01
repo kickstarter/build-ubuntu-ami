@@ -89,7 +89,7 @@ class BuildUbuntuAmi
 
   def launch_server!
     puts "Launching server..."
-    self.server = Fog::Compute[:aws].servers.create({
+    self.server = Fog::Compute.new(:provider => 'AWS', :region => region).servers.create({
       :flavor_id => flavor,
       :image_id => canonical_ami,
       :groups => [group],
