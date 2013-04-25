@@ -107,7 +107,7 @@ class BuildUbuntuAmi
   def launch_volume!
     self.volume = server.volumes.create(:size => size, :device => ebs_device)
     puts "Attaching volume #{volume.id}"
-    volume.wait_for { state == 'in-use' }
+    volume.wait_for { state == 'in-use'|| state == 'attached' }
   end
 
   def snapshot_description
