@@ -1,6 +1,6 @@
 # Create custom Ubuntu AMIs the hard (secure) way
 
-`build-ubunut-ami` is a simple tool for making secure, custom Ubuntu images for Amazon EC2 from your local computer.
+`build-ubuntu-ami` is a simple tool for making secure, custom Ubuntu images for Amazon EC2 from your local computer.
 
 ## Why the hard way?
 
