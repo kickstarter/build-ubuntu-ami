@@ -2,6 +2,8 @@ require 'open-uri'
 require 'fog'
 require 'erb'
 
+STDOUT.sync=true
+
 class BuildUbuntuAmi
   USER_DATA = File.read(File.join(File.dirname(__FILE__),'..','data','user_data.sh.erb'))
 
