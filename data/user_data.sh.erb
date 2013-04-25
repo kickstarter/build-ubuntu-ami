@@ -78,7 +78,7 @@ mkdir $ebsimagedir
 mount $dev $ebsimagedir
 
 # Copy file system from temporary rootdir to EBS volume
-tar -cSf - -C $imagedir . | sudo tar xvf - -C $ebsimagedir
+tar -cSf - -C $imagedir . | tar xvf - -C $ebsimagedir
 
 # Unmount
 umount $imagedir
