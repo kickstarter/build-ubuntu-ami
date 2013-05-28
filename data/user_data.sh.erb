@@ -45,7 +45,7 @@ chroot $imagedir apt-get update
 chroot $imagedir apt-get dist-upgrade -y
 
 # RUN CUSTOM USER SCRIPT
-cat <<CUSTOM_SCRIPT_EOF > $imagedir/tmp/custom_user_script
+cat << 'CUSTOM_SCRIPT_EOF' > $imagedir/tmp/custom_user_script
 <%= custom_user_script %>
 CUSTOM_SCRIPT_EOF
 
