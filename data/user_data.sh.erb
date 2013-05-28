@@ -21,11 +21,17 @@ mount -o loop $image $imagedir
 
 # Allow network access from chroot environment
 # cp fails because the symlink reference doesn't exist. Create a backup for now.
-if [ -e $imagedir/etc/resolve.conf ]; then mv $imagedir/etc/resolv.conf $imagedir/etc/resolv.conf.bak; fi
+if [[ ( -L $imagedir/etc/resolv.conf ) && ( ! -e $imagedir/etc/resolv.conf ) ]]; then
+  mv $imagedir/etc/resolv.conf $imagedir/etc/resolv.conf.bak;
+fi
+
 cp /etc/resolv.conf $imagedir/etc/
 
 # Upgrade and install packages on the target file system
-chroot $imagedir mount -t proc none /proc
+# Chroot needs to mount proc/sys/dev to function properly
+mount -t proc none $imagedir/proc/
+mount -t sysfs none $imagedir/sys/
+mount -o bind /dev $imagedir/dev/
 
 # prevent daemons from starting during apt-get 
 cat <<EOF | tee $imagedir/usr/sbin/policy-rc.d > /dev/null
@@ -75,7 +81,7 @@ mkdir $ebsimagedir
 mount $dev $ebsimagedir
 
 # Copy file system from temporary rootdir to EBS volume
-tar -cSf - -C $imagedir . | sudo tar xvf - -C $ebsimagedir
+tar -cSf - -C $imagedir . | tar xvf - -C $ebsimagedir
 
 # Unmount
 umount $imagedir

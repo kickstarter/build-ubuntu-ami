@@ -2,6 +2,8 @@ require 'open-uri'
 require 'fog'
 require 'erb'
 
+STDOUT.sync=true
+
 class BuildUbuntuAmi
   USER_DATA = File.read(File.join(File.dirname(__FILE__),'..','data','user_data.sh.erb'))
 
@@ -107,7 +109,7 @@ class BuildUbuntuAmi
   def launch_volume!
     self.volume = server.volumes.create(:size => size, :device => ebs_device)
     puts "Attaching volume #{volume.id}"
-    volume.wait_for { state == 'in-use' }
+    volume.wait_for { state == 'in-use'|| state == 'attached' }
   end
 
   def snapshot_description
@@ -142,7 +144,7 @@ class BuildUbuntuAmi
     puts "waiting for user_data to complete and server to shut down..."
     puts "Follow along by running:"
     puts "  ssh -l #{server.username} #{server.dns_name} 'tail -f /var/log/user-data.log'"
-    server.wait_for(60*60*24*7) { state == 'stopped' }
+    server.wait_for(60*60*24*7) { state == 'stopped' || state == 'stopping' }
 
     puts "Detaching volume"
     volume.server = nil
