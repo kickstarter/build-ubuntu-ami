@@ -84,8 +84,8 @@ mount $dev $ebsimagedir
 tar -cSf - -C $imagedir . | tar xvf - -C $ebsimagedir
 
 # Unmount
-umount $imagedir
-umount $ebsimagedir
+umount -l $imagedir
+umount -l $ebsimagedir
 
 # Shutdown to signal success
 shutdown -h now
