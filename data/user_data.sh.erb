@@ -54,8 +54,8 @@ chroot $imagedir /tmp/custom_user_script
 # END CUSTOM USER SCRIPT
 
 # Put resolv.conf symlink back in place
-rm -rf  $imagedir/etc/resolve.conf
-if [ -e $imagedir/etc/resolve.conf.bak ]; then mv $imagedir/etc/resolv.conf.bak $imagedir/etc/resolv.conf; fi
+rm -f  $imagedir/etc/resolv.conf
+if [ -L $imagedir/etc/resolv.conf.bak ]; then mv $imagedir/etc/resolv.conf.bak $imagedir/etc/resolv.conf; fi
 
 # Clean up chroot environment
 chroot $imagedir umount /proc
