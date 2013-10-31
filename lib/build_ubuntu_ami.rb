@@ -9,7 +9,7 @@ class BuildUbuntuAmi
 
   attr_accessor :region, :flavor, :brand, :size, :codename, :key_name, :group,
     :custom_user_script, :now, :server, :volume, :snapshot, :arch,
-    :canonical_ami, :kernel
+    :canonical_ami, :kernel, :virtualization
 
   def self.default_options
     {
@@ -21,7 +21,8 @@ class BuildUbuntuAmi
       :key_name => 'default',
       :group    => 'default',
       :arch     => 'amd64',
-      :kernel   => nil
+      :kernel   => nil,
+      :virtualization => 'paravirtual'
     }
   end
 
@@ -49,7 +50,7 @@ class BuildUbuntuAmi
       ary[4] == 'ebs' &&
         ary[5] == arch &&
         ary[6] == region &&
-        ary[9] == 'paravirtual'
+        ary.last == virtualization
     end
 
     self.canonical_ami = data[7]
