@@ -8,11 +8,17 @@ A simple, secure tool for customizing Ubuntu images for Amazon EC2 from your loc
 
 ## Basic Usage
 
+See [examples](https://github.com/kickstarter/build-ubuntu-ami/tree/master/examples) of custom build scripts.
+
+    # Create a custom AMI from my_script.sh
     build-ubuntu-ami my_custom_script.sh
+
+    # Show options
+    build-ubuntu-ami -h
 
 ## How it works
 
-This program is based heavily on Eric Hammond's blog post [Creating Public AMIs Securely for EC2](http://alestic.com/2011/06/ec2-ami-security), and his shell script [alestic-git-build-ami](https://github.com/alestic/alestic-git/blob/master/bin/alestic-git-build-ami).
+This program is based on Eric Hammond's blog post [Creating Public AMIs Securely for EC2](http://alestic.com/2011/06/ec2-ami-security), and his shell script [alestic-git-build-ami](https://github.com/alestic/alestic-git/blob/master/bin/alestic-git-build-ami).
 
 It works as follows:
 
