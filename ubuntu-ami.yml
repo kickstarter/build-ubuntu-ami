@@ -1,0 +1,123 @@
+---
+# Creates a custom ubuntu AMI
+# 1. Launch an EC2 instance, EBS volume
+# 2. Wait for user data script to finish
+# 3. EC2 instance registers AMI (wish CF could make AMI as a resource)
+# Output: AMI
+
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Creates a custom AMI based on an Ubuntu base AMI'
+Parameters:
+  InstanceType:
+    Description: EC2 instance type
+    Type: String
+    Default: m1.small
+  CustomUserScript:
+    Description: Script to customize your AMI
+    Type: String
+  ControlScript:
+    Description: Script to manage disk images, take a snapshot, create AMI
+    Type: String
+    Default: http://example.com
+  UbuntuSourceImage:
+    Description: The base ubuntu AMI
+    Type: String
+    Default: ami-d9a98cb0 # us-east-1 64-bit EBS 12.04 AMI
+  DestinationImageName:
+    Description: Name to give the resulting AMI
+  ImageAttributes:
+    Description: AMI properties to customize
+    Type: String
+  VolumeSize:
+    Description: Size of the root volume (GB)
+    Type: Number
+    Default: 10
+  SecurityGroups:
+    Description: Security groups
+    Type: CommaDelimitedList
+    Default: default
+  KeyName:
+    Description: SSH key to authorize
+    Type: String
+    Default: default
+
+
+Resources:
+  Volume:
+    Type: AWS::EC2::Volume
+    Properties:
+      Size:
+        Ref: VolumeSize
+
+  Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId:
+        Ref: UbuntuImage
+      InstanceType:
+        Ref: InstanceType
+      SecurityGroups:
+        Ref: SecurityGroups
+      KeyName:
+        Ref: KeyName
+      UserData:
+        # Generic UserData to install && run cfn-init
+        Fn::Base64:
+          Fn::Join:
+            - "\n"
+            - - "#!/bin/bash -ex"
+              - "exec > >(tee /var/log/user-data.log|logger -t user-data -s 2>/dev/console) 2>&1"
+              # Install aws-cfn-bootstrap python commands
+              - "export  DEBIAN_FRONTEND=noninteractive"
+              - "export SUCCESS_FLAG=/var/log/user-data-success"
+              - "which easy_install || apt-get install -y python-setuptools"
+              - "which cfn-init || easy_install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz"
+              # Run cfn-init
+              - Fn::Join:
+                - " "
+                - - "cfn-init --verbose --resource Instance"
+                  - --stack
+                  -  Ref: AWS::StackName
+                  - --region
+                  - Ref: AWS::Region
+              - "echo See /var/log/cfn-init.log..."
+              - "echo Success"
+              - "touch /var/log/user-data-success"
+
+    Metadata:
+      AWS::CloudFormation::Init:
+        config:
+          commands:
+            install_chef:
+              command:
+                Ref: ControlScript
+              env:
+                DEBIAN_FRONTEND: noninteractive
+                # A sane PATH
+                PATH: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+          files:
+            "/tmp/control_script":
+              content:
+                Ref: ControlScript
+              mode: '000755'
+            "/tmp/custom_user_script":
+              content:
+                Ref: CustomUserScript
+              mode: '000755'
+
+
+  WaitHandle:
+    Type; AWS::CloudFormation::WaitConditionHandle
+    Properties: {}
+  WaitCondition:
+    Type: AWS::CloudFormation::WaitCondition
+    DependsOn: Instance
+    Properties:
+    Handle:
+      Ref: WaitHandle
+    Timeout: 4500 # 1h15m
+
+Outputs:
+  Instance:
+    Value:
+      Ref: Instance

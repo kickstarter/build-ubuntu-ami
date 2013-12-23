@@ -1,0 +1,84 @@
+#!/bin/bash -ex
+# User data script
+
+# Log output to the console, syslog, and /var/log/user-data.log
+exec > >(tee /var/log/user-data.log|logger -t user-data -s 2>/dev/console) 2>&1
+
+##
+# Required environment variables
+# IMAGE_NAME
+# IMAGE_URL
+#
+
+# Download and extract the clean image
+image=/mnt/$IMAGE_NAME.img
+imagedir=/mnt/$IMAGE_NAME
+wget -qO- "$IMAGE_URL" | tar xzf - -C /mnt
+
+# The image is 1.4GB by default
+# Add 4GB for good measure
+dd if=/dev/zero bs=1024k count=4096 >> $image
+e2fsck -p -f $image
+resize2fs $image
+
+# Mount the image
+mkdir -p $imagedir
+mount -o loop $image $imagedir
+
+# Allow network access from chroot environment
+# cp fails because the symlink reference doesn't exist. Create a backup for now.
+if [[ ( -L $imagedir/etc/resolv.conf ) && ( ! -e $imagedir/etc/resolv.conf ) ]]; then
+  mv $imagedir/etc/resolv.conf $imagedir/etc/resolv.conf.bak;
+fi
+
+cp /etc/resolv.conf $imagedir/etc/
+
+# Upgrade and install packages on the target file system
+# Chroot needs to mount proc/sys/dev to function properly
+mount -t proc none $imagedir/proc/
+mount -t sysfs none $imagedir/sys/
+mount -o bind /dev $imagedir/dev/
+
+# prevent daemons from starting during apt-get
+cat <<EOF | tee $imagedir/usr/sbin/policy-rc.d > /dev/null
+#!/bin/sh
+exit 101
+EOF
+
+chmod 755 $imagedir/usr/sbin/policy-rc.d
+
+chroot $imagedir apt-get update
+chroot $imagedir apt-get dist-upgrade -y
+
+# RUN CUSTOM USER SCRIPT
+cp /tmp/custom_user_script $imagedir/tmp/custom_user_script
+chmod +x $imagedir/tmp/custom_user_script
+chroot $imagedir /tmp/custom_user_script
+
+# Put resolv.conf symlink back in place
+rm -f  $imagedir/etc/resolv.conf
+if [ -L $imagedir/etc/resolv.conf.bak ]; then mv $imagedir/etc/resolv.conf.bak $imagedir/etc/resolv.conf; fi
+
+# Clean up chroot environment
+chroot $imagedir umount /proc
+
+# Clean up policy-rc.d
+rm -f $imagedir/usr/sbin/policy-rc.d
+
+# Wait for EBS volume to be attached
+dev="/dev/xvdi"
+
+while [ ! -e $dev ]; do sleep 1; done
+
+# Format and mount the EBS volume
+yes | sudo mkfs.ext4 -L cloudimg-rootfs $dev
+ebsimagedir=$imagedir-ebs
+mkdir $ebsimagedir
+mount $dev $ebsimagedir
+
+# Copy file system from temporary rootdir to EBS volume
+tar -cSf - -C $imagedir . | tar xvf - -C $ebsimagedir
+
+# Unmount
+umount -l $imagedir
+umount -l $ebsimagedir

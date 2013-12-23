@@ -71,7 +71,7 @@ class BuildUbuntuAmi
   end
 
   def ebs_device
-    '/dev/sdi'
+    '/dev/xvdi'
   end
 
   def root_device
@@ -132,10 +132,7 @@ class BuildUbuntuAmi
   end
 
   def cleanup!
-    puts "Deleting #{volume.id}"
-    volume.destroy
-    puts "Terminating #{server.id}"
-    server.destroy
+    stack.destroy
   end
 
   def build!
