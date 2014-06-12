@@ -15,7 +15,19 @@ For convenience, this script does not need an AWS EC2 private key & cert for cre
     # Using rubygems
     gem install build-ubuntu-ami
 
+## Configuration
+
+`build-ubuntu-ami` relies on Fog. You will need to configure a `~/.fog` file, like so:
+
+```yaml
+:default:
+  :aws_access_key_id: A..your key here...Z
+  :aws_secret_access_key: A..........your key here...............Z
+```
+
 ## Basic Usage
+
+if you have not registered an SSH keypair named 'default' with AWS, you will need to supply a `-k` argument.
 
 See [examples](https://github.com/kickstarter/build-ubuntu-ami/tree/master/examples) of custom build scripts.
 
