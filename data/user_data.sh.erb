@@ -33,7 +33,7 @@ mount -t proc none $imagedir/proc/
 mount -t sysfs none $imagedir/sys/
 mount -o bind /dev $imagedir/dev/
 
-# prevent daemons from starting during apt-get 
+# prevent daemons from starting during apt-get
 cat <<EOF | tee $imagedir/usr/sbin/policy-rc.d > /dev/null
 #!/bin/sh
 exit 101
@@ -66,9 +66,8 @@ rm -f $imagedir/usr/sbin/policy-rc.d
 # Wait for EBS volume to be attached
 dev=<%= ebs_device %>
 
-# Device names changed in precise/sid. lsb_release modules arent loaded so use debian_version.
-codename=$(cat /etc/debian_version)
-if [ "$codename" == "wheezy/sid" ]; then
+# Device names changed in precise/sid.
+if [ -e /dev/xvdi ]; then
     dev="/dev/xvdi"
 fi
 
