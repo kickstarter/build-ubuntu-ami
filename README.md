@@ -1,3 +1,7 @@
+# Looking for maintainers
+
+I'm no longer maintaining this project. If you're interested in maintaining it, please post a comment [on this issue](https://github.com/kickstarter/build-ubuntu-ami/issues/25).
+
 # Create custom Ubuntu AMIs the hard (secure) way
 
 `build-ubuntu-ami` is a simple tool for making secure, custom Ubuntu images for Amazon EC2 from your local computer.
